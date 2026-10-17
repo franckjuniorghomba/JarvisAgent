@@ -824,6 +824,27 @@ def _rule_path(path: Path) -> str:
         return "/" + str(path.resolve())
 
 
+def cmd_fusionner_dev(a) -> int:
+    """Fusionne une PR vers dev, seulement si CI verte + contre-relecture « VERDICT : PRÊT »."""
+    from . import fusion
+    proj = config.projects().get(a.projet)
+    if not proj:
+        return _err(f"projet inconnu « {a.projet} » (jarvis projet liste)")
+    if a.pr <= 0:
+        return _err("numéro de PR invalide")
+    try:
+        pr = fusion.fusionner(a.pr, Path(proj["chemin"]))
+    except fusion.FusionRefusee as exc:
+        store.feed_add("erreur", f"fusion refusée {a.projet} #{a.pr} : {exc}")
+        return _err(f"fusion refusée : {exc}")
+    texte = f"{a.projet} #{a.pr} fusionnée dans dev : {pr.get('title', '')}"
+    store.feed_add("systeme", texte)
+    notify.telegram(f"🔀 {texte}\n{pr.get('url', '')}")
+    print(f"✓ {texte}")
+    return 0
+
+
+
 def cmd_chef_preparer(a) -> int:
     """Prépare le dossier de travail du chef (rôle + permissions) et affiche son chemin."""
     chef_dir = config.DATA_DIR / "chef"
@@ -856,6 +877,7 @@ def cmd_chef_preparer(a) -> int:
     settings = {
         "permissions": {
             "allow": [
+                "Bash(jarvis fusionner-dev *)",
                 "Bash(jarvis etat *)", "Bash(jarvis etat)", "Bash(jarvis projet liste)", "Bash(jarvis fil *)",
                 "Bash(jarvis plan nouveau *)", "Bash(jarvis plan liste *)", "Bash(jarvis plan liste)",
                 "Bash(jarvis plan voir *)", "Bash(jarvis task *)", "Bash(jarvis capacite)",
@@ -1047,6 +1069,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("type")
     s.add_argument("texte", nargs="+")
     s.set_defaults(fn=cmd_evenement)
+    s = sub.add_parser("fusionner-dev", help="fusionner une PR vers dev (CI verte + relecture PRÊT)")
+    s.add_argument("projet")
+    s.add_argument("pr", type=int)
+    s.set_defaults(fn=cmd_fusionner_dev)
     sub.add_parser("chef-preparer", help=argparse.SUPPRESS).set_defaults(fn=cmd_chef_preparer)
     sub.add_parser("chef-message", help=argparse.SUPPRESS).set_defaults(fn=cmd_chef_message)
     sub.add_parser("chef-etat", help=argparse.SUPPRESS).set_defaults(fn=cmd_chef_etat)

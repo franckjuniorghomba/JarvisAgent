@@ -551,7 +551,7 @@ main() {
     chef)         cmd_chef "$@" ;;
     task|t)       cmd_task "$@" ;;
     cockpit|etat|plan|fil|projet|telegram|regler|capacite|demander|note|journal|daemon|voir|jetons|veille|\
-    fermer|reprendre|sante|reparer-git|role|modele|tache|verdict|bilan|usine|studio|livrer|livrables|web)
+    fermer|reprendre|sante|reparer-git|role|modele|tache|verdict|bilan|usine|studio|livrer|livrables|web|fusionner-dev)
                   py "$cmd" "$@" ;;
     chef-lancer)  cmd_chef_lancer "$@" ;;
     relancer)     cmd_relancer "$@" ;;

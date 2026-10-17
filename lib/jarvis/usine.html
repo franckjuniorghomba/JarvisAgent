@@ -133,6 +133,20 @@
     .cartouche > div:last-child { border-bottom: 0; }
     .reservoirs { grid-template-columns: 1fr; }
   }
+
+/* Correctif responsive Jarvis */
+.corps > *, .cote > *, .poste > * { min-width: 0; }
+.cote { grid-template-columns: minmax(0, 1fr); }
+.bloc, .contenu { min-width: 0; overflow-wrap: anywhere; }
+.livrable img, .livrable video { max-width: 100%; height: auto; }
+.plan {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr));
+}
+@media (max-width: 600px) {
+  .page { padding: 12px; }
+  .corps { grid-template-columns: minmax(0, 1fr); }
+}
+
 </style>
 </head>
 <body>
